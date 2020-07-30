@@ -1,7 +1,11 @@
 // globals 
 const GAME_BOARD = [];
+let POINTS = 0;
+let TAIL_LENGTH = 0;
+
 // selectors
 const board = document.querySelector('.board');
+const score = document.querySelector('.score');
 
 // functions
 const drawBoard = (rows, tiles) => {
@@ -24,30 +28,39 @@ const drawBoard = (rows, tiles) => {
 }
 const generateGems = (amount) => {
   for(let i = 0; i < amount; i++){
-    let x = Math.floor(Math.random() * GAME_BOARD.length - 1) + 0;
-    let y = Math.floor(Math.random() * GAME_BOARD.length - 1) + 0;
-    console.log(x, y);
+    let x = Math.floor(Math.random() * GAME_BOARD.length);
+    let y = Math.floor(Math.random() * GAME_BOARD.length);
     const gemTile = document.createElement('div');
     const tile = board.children[x].children[y];
-    gemTile.className = 'gem'
-    tile.append(gemTile);
+    if(tile.innerHTML){
+      i--;
+      continue;
+    } else {
+      const gems = ['diamond', 'ruby', 'emerald'];
+      gemTile.classList.add('gem', `${gems[Math.floor(Math.random() * 3)]}`);
+      tile.append(gemTile);
+    }
   }
 }
 const spawnPlayer = (x, y) => {
   const tile = board.children[x].children[y];
   const playerTile = document.createElement('div');
   playerTile.className = 'player'
-  tile.append(playerTile);
+  tile.prepend(playerTile);
   return [x, y];
 }
 const movePlayer = (e) => {
   const position = startPos;
   const player = document.querySelector('.player');
+  const sibling = player.nextSibling;
+  if(sibling){
+    sibling.remove();
+  }
   if(e.keyCode === 38 && position[0] > 0){
     // up
-      position[0]--;
-      player.remove();
-      spawnPlayer(...position);
+    position[0]--;
+    player.remove();
+    spawnPlayer(...position);
   } else if(e.keyCode === 40 && position[0] < GAME_BOARD.length - 1){
     // down
     position[0]++;
@@ -65,8 +78,31 @@ const movePlayer = (e) => {
     spawnPlayer(...position);
   }
 }
+
 // events
-document.addEventListener('keydown', movePlayer);
+document.addEventListener('keydown', (e) => {
+  movePlayer(e);
+  const player = document.querySelector('.player');
+  const gem = player.nextSibling;
+  if(gem){
+    gem.remove();
+    TAIL_LENGTH++;
+    switch(gem.classList[1]){
+      case 'diamond':
+        POINTS += 50;
+        score.innerHTML = POINTS;
+        break;
+      case 'ruby':
+        POINTS += 25;
+        score.innerHTML = POINTS;
+        break;
+      case 'emerald':
+        POINTS += 10;
+        score.innerHTML = POINTS;
+        break;
+    }
+  }
+});
 
 // calls
 drawBoard(15, 15);
